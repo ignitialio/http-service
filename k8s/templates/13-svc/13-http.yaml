@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http
+  labels:
+    app: http
+spec:
+  replicas: "{{$.iios.app.replicas}}"
+  selector:
+    matchLabels:
+      app: http
+  template:
+    metadata:
+      labels:
+        app: http
+    spec:
+      containers:
+      - name: http
+        image: "ignitial/http:{{$.iios.app.version}}"
+        imagePullPolicy: "{{$.iios.app.imagePullPolicy}}"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /opt/http/server/config/generated
+        ports: "{{$.iios.app.ports}}"
+      imagePullSecrets:
+        - name: regcred
+      volumes:
+        - name: config-volume
+          configMap:
+            name: http-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http
+spec:
+  selector:
+    app: http
+  ports:
+  - name: http
+    port: "{{$.iios.app.ports[0].containerPort}}"
+    targetPort: "{{$.iios.app.ports[0].containerPort}}"
