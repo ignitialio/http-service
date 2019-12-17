@@ -1,11 +1,12 @@
 const got = require('got')
 
 const Service = require('@ignitial/iio-services').Service
+const utils = require('@ignitial/iio-services').utils
 const config = require('./config')
 
-class Http extends Service {
-  constructor(options) {
-    super(options)
+class HTTPInstance {
+  constructor(id) {
+    this._id = id
   }
 
   // GET
@@ -17,23 +18,56 @@ class Http extends Service {
 
   // POST
   // ***************************************************************************
-  post(args) {
+  post(url, options) {
     /* @_POST_ */
     return got.post(url, options)
   }
 
   // PUT
   // ***************************************************************************
-  put(args) {
+  put(url, options) {
     /* @_PUT_ */
-    return got.post(url, options)
+    return got.put(url, options)
   }
 
   // DELETE
   // ***************************************************************************
-  delete(args) {
+  delete(url, options) {
     /* @_DELETE_ */
     return got.delete(url, options)
+  }
+}
+
+class Http extends Service {
+  constructor(options) {
+    super(options)
+
+    this._instances = {}
+  }
+
+  addInstance(id) {
+    return new Promise((resolve, reject) => {
+      try {
+        this._instances[id] = new HTTPInstance(id)
+        let methods = utils.getAllMethods(this._instances[id])
+
+        for (let method of methods) {
+          this[method + '_' + id] = this._instances[id][method]
+        }
+
+        resolve()
+      } catch (err) {
+        reject(err)
+      }
+    })
+  }
+
+  removeInstance(id) {
+    return new Promise((resolve, reject) => {
+      delete this._instances[id]
+
+      resolve()
+    })
   }
 }
 

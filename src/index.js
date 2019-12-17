@@ -8,7 +8,7 @@ global.iios_http = function(Vue) {
   Vue.component('http', Http)
 
   let register = () => {
-    // EXEAMPLE
+    // EXAMPLE
     Vue.prototype.$services.emit('app:menu:add', [
       {
         path: '/service-http',
