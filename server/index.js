@@ -46,10 +46,15 @@ class Http extends Service {
   }
 
   addInstance(id) {
+    /* @_POST_ */
     return new Promise((resolve, reject) => {
       try {
+        if (this._instances[id]) {
+          delete this._instances[id]
+        }
+
         this._instances[id] = new HTTPInstance(id)
-        let methods = utils.getAllMethods(this._instances[id])
+        let methods = utils.getMethods(this._instances[id])
 
         for (let method of methods) {
           this[method + '_' + id] = this._instances[id][method]
@@ -63,10 +68,25 @@ class Http extends Service {
   }
 
   removeInstance(id) {
+    /* @_DELETE_ */
     return new Promise((resolve, reject) => {
       delete this._instances[id]
 
       resolve()
+    })
+  }
+
+  getInstances() {
+    /* @_GET_ */
+    return new Promise((resolve, reject) => {
+      resolve(Object.keys(this._instances))
+    })
+  }
+
+  getMethods(instanceId) {
+    /* @_GET_ */
+    return new Promise((resolve, reject) => {
+      resolve(utils.getMethods(this).filter(e => e.match(instanceId)))
     })
   }
 }
