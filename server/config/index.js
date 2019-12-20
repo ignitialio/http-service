@@ -137,6 +137,19 @@ module.exports = {
       title: 'HTTP',
       info: 'Requêtes HTTP'
     },
+    /* can be an worflow (Chaman) block */
+    workflow: {
+      types: [ 'Source' ],
+      hasWidget: false,
+      isMultinstance: true,
+      outputs: [
+        {
+          name: 'dataOut',
+          type: 'rpc',
+          method: 'get'
+        }
+      ]
+    },
     /* configuration data schema */
     schema: {
       title: 'Configuration',
