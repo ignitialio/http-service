@@ -1,16 +1,20 @@
 <template>
   <div :id="id" class="http-layout">
     <ig-form v-if="!!config && !!schema" class="http-form"
-      v-model="config" :schema="schema"></ig-form>
+      :value="config" @input="handleConfig"
+      :schema="schema"></ig-form>
   </div>
 </template>
 
 <script>
 export default {
   props: {
-    /* use when source for worklows */
+    /* used when source for worklows */
     defaultMethod: {
       type: String
+    },
+    options: {
+      type: Object
     }
   },
   data: () => {
@@ -25,21 +29,33 @@ export default {
     }
   },
   watch: {
-    config: function(val) {
+    options: {
+      handler: function(val) {
+        this.config = JSON.parse(JSON.stringify(this.options))
+      },
+      deep: true
+    }
+  },
+  methods: {
+    handleConfig(val) {
+      console.log('HTTP', $j(val))
+      this.$emit('update:options', val)
+
       if (this.defaultMethod) {
         this.$services.waitForService('http').then(httpService => {
-          httpService.presetMethodArgs(this.defaultMethod, [ config.url ])
+          httpService.presetMethodArgs(this.defaultMethod, [ val.url ])
             .catch(err => console.log(err))
         }).catch(err => console.log(err))
       }
     }
   },
-  computed: {
-
-  },
-  methods: {
-  },
   mounted() {
+    if (this.options) {
+      this.config = JSON.parse(JSON.stringify(this.options))
+    } else {
+      this.$emit('update:options', this.config)
+    }
+
     // dev
     // refresh service UI on hot reload
     this.$services.once('service:up', service => {

@@ -188,6 +188,7 @@ module.exports = {
               key: {
                 type: 'string',
                 title: 'Header key',
+                default: '',
                 _meta: {
                   type: null,
                   i18n: {
@@ -198,6 +199,7 @@ module.exports = {
               value: {
                 type: 'string',
                 title: 'Header value',
+                default: '',
                 _meta: {
                   type: null,
                   i18n: {
