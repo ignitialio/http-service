@@ -10,8 +10,8 @@
 export default {
   props: {
     /* used when source for worklows */
-    defaultMethod: {
-      type: String
+    node: {
+      type: Object
     },
     options: {
       type: Object
@@ -23,6 +23,7 @@ export default {
       config: {
         url: '',
         method: 'GET',
+        responseType: 'json',
         headers: []
       },
       schema: null
@@ -37,21 +38,26 @@ export default {
     }
   },
   methods: {
+    _preset() {
+      for (let output of this.node.outputs) {
+        this.$services.waitForService('http').then(httpService => {
+          httpService.presetMethodArgs(output.method, [ this.config.url, {
+            responseType: this.config.responseType
+          }]).catch(err => console.log(err))
+        }).catch(err => console.log(err))
+      }
+    },
     handleConfig(val) {
       console.log('HTTP', $j(val))
       this.$emit('update:options', val)
-
-      if (this.defaultMethod) {
-        this.$services.waitForService('http').then(httpService => {
-          httpService.presetMethodArgs(this.defaultMethod, [ val.url ])
-            .catch(err => console.log(err))
-        }).catch(err => console.log(err))
-      }
+      this._preset()
     }
   },
   mounted() {
     if (this.options) {
       this.config = JSON.parse(JSON.stringify(this.options))
+      // use older configs
+      this.config.responseType = this.config.responseType || 'json'
     } else {
       this.$emit('update:options', this.config)
     }
@@ -65,12 +71,9 @@ export default {
       }
     })
 
-    this.$services.waitForService('http').then(async httpService => {
-      try {
-        this.schema = this.$services.servicesDico.http.options.schema
-      } catch (err) {
-        console.log(err)
-      }
+    this.$services.waitForService('http').then(httpService => {
+      this.schema = this.$services.servicesDico.http.options.schema
+      this._preset()
     }).catch(err => console.log(err))
   },
   beforeDestroy() {

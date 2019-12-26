@@ -178,6 +178,20 @@ module.exports = {
             }
           }
         },
+        responseType: {
+          title: 'Response type',
+          type: 'string',
+          enum: [
+            'text', 'json', 'buffer'
+          ],
+          default: 'json',
+          _meta: {
+            type: 'enum',
+            i18n: {
+              'Response type': [ 'Type de la réponse', 'Tipo de respuesta' ]
+            }
+          }
+        },
         headers: {
           title: 'HTTP request headers',
           type: 'array',

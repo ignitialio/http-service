@@ -11,29 +11,57 @@ class HTTPInstance {
 
   // GET
   // ***************************************************************************
-  get(url, options) {
+  get(url, options, grants) {
     /* @_GET_ */
-    return got.get(url, options)
+    return new Promise((resolve, reject) => {
+      if (!grants) {
+        // prevent arguments mismatch
+        grants = JSON.parse(JSON.stringify(options))
+        options = undefined
+      }
+
+      got.get(url, options).then(result => {
+        resolve(result.body)
+      }).catch(err => reject(err))
+    })
   }
 
   // POST
   // ***************************************************************************
-  post(url, options) {
+  post(url, options, grants) {
     /* @_POST_ */
+    if (!grants) {
+      // prevent arguments mismatch
+      grants = JSON.parse(JSON.stringify(options))
+      options = undefined
+    }
+
     return got.post(url, options)
   }
 
   // PUT
   // ***************************************************************************
-  put(url, options) {
+  put(url, options, grants) {
     /* @_PUT_ */
+    if (!grants) {
+      // prevent arguments mismatch
+      grants = JSON.parse(JSON.stringify(options))
+      options = undefined
+    }
+
     return got.put(url, options)
   }
 
   // DELETE
   // ***************************************************************************
-  delete(url, options) {
+  delete(url, options, grants) {
     /* @_DELETE_ */
+    if (!grants) {
+      // prevent arguments mismatch
+      grants = JSON.parse(JSON.stringify(options))
+      options = undefined
+    }
+
     return got.delete(url, options)
   }
 }
