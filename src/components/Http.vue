@@ -42,6 +42,7 @@ export default {
       for (let output of this.node.outputs) {
         this.$services.waitForService('http').then(httpService => {
           httpService.presetMethodArgs(output.method, [ this.config.url, {
+            headers: this.config.headers,
             responseType: this.config.responseType
           }]).catch(err => console.log(err))
         }).catch(err => console.log(err))
