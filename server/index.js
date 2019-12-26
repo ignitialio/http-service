@@ -9,6 +9,19 @@ class HTTPInstance {
     this._id = id
   }
 
+  /* normalize from array to object */
+  _normalizeHeaders(options) {
+    if (options.headers && Array.isArray(options.headers)) {
+      let headers = {}
+
+      for (let kv of options.headers) {
+        headers[kv.key] = kv.value
+      }
+
+      options.headers = headers
+    }
+  }
+
   // GET
   // ***************************************************************************
   get(url, options, grants) {
@@ -20,6 +33,10 @@ class HTTPInstance {
         options = undefined
       }
 
+      if (options) {
+        this._normalizeHeaders(options)
+      }
+      
       got.get(url, options).then(result => {
         resolve(result.body)
       }).catch(err => reject(err))
@@ -36,6 +53,10 @@ class HTTPInstance {
       options = undefined
     }
 
+    if (options) {
+      this._normalizeHeaders(options)
+    }
+
     return got.post(url, options)
   }
 
@@ -49,6 +70,10 @@ class HTTPInstance {
       options = undefined
     }
 
+    if (options) {
+      this._normalizeHeaders(options)
+    }
+
     return got.put(url, options)
   }
 
@@ -60,6 +85,10 @@ class HTTPInstance {
       // prevent arguments mismatch
       grants = JSON.parse(JSON.stringify(options))
       options = undefined
+    }
+
+    if (options) {
+      this._normalizeHeaders(options)
     }
 
     return got.delete(url, options)
@@ -85,7 +114,7 @@ class Http extends Service {
         let methods = utils.getMethods(this._instances[id])
 
         for (let method of methods) {
-          this[method + '_' + id] = this._instances[id][method]
+          this[method + '_' + id] = this._instances[id][method].bind(this._instances[id])
         }
 
         resolve()
