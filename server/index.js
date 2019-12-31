@@ -1,12 +1,31 @@
 const got = require('got')
 
-const Service = require('@ignitial/iio-services').Service
+const Gateway = require('@ignitial/iio-services').Gateway
 const utils = require('@ignitial/iio-services').utils
 const config = require('./config')
 
 class HTTPInstance {
   constructor(id) {
     this._id = id
+  }
+
+  _preset(period) {
+    return new Promise((resolve, reject) => {
+      if (this.interval) {
+        clearInterval(this.interval)
+        this.interval = null
+      }
+
+      this.interval = setInterval(this.process, period)
+      resolve()
+    })
+  }
+
+  _clearPreset() {
+    return new Promise((resolve, reject) => {
+      clearInterval(this.interval)
+      resolve()
+    })
   }
 
   /* normalize from array to object */
@@ -36,7 +55,7 @@ class HTTPInstance {
       if (options) {
         this._normalizeHeaders(options)
       }
-      
+
       got.get(url, options).then(result => {
         resolve(result.body)
       }).catch(err => reject(err))
@@ -95,7 +114,7 @@ class HTTPInstance {
   }
 }
 
-class Http extends Service {
+class Http extends Gateway {
   constructor(options) {
     super(options)
 
@@ -130,6 +149,37 @@ class Http extends Service {
       delete this._instances[id]
 
       resolve()
+    })
+  }
+
+  workflowNodePreset(node) {
+    return new Promise(async (resolve, reject) => {
+      if (this._instances[node.instance]) {
+        try {
+          for (let output of node.outputs) {
+            await this.presetMethodArgs(output.method, [ node.options.url, {
+              headers: node.options.headers,
+              responseType: node.options.responseType
+            }])
+          }
+
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
+      } else {
+        reject(new Error('missing instance'))
+      }
+    })
+  }
+
+  workflowNodeClearPreset(node) {
+    return new Promise((resolve, reject) => {
+      if (this._instances[node.instance]) {
+        resolve()
+      } else {
+        reject(new Error('missing instance'))
+      }
     })
   }
 

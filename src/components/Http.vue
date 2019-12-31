@@ -39,18 +39,9 @@ export default {
   },
   methods: {
     _preset() {
-      for (let output of this.node.outputs) {
-        this.$services.waitForService('http').then(httpService => {
-          console.log([ this.config.url, {
-            headers: this.config.headers,
-            responseType: this.config.responseType
-          }])
-          httpService.presetMethodArgs(output.method, [ this.config.url, {
-            headers: this.config.headers,
-            responseType: this.config.responseType
-          }]).catch(err => console.log(err))
-        }).catch(err => console.log(err))
-      }
+      this.$services.waitForService('http').then(httpService => {
+        httpService.workflowNodePreset(this.node).catch(err => console.log(err))
+      }).catch(err => console.log(err))
     },
     handleConfig(val) {
       console.log('HTTP', $j(val))
