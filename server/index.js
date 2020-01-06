@@ -1,6 +1,6 @@
 const got = require('got')
 
-const Gateway = require('@ignitial/iio-services').Gateway
+const Service = require('@ignitial/iio-services').Service
 const utils = require('@ignitial/iio-services').utils
 const config = require('./config')
 
@@ -44,6 +44,8 @@ class HTTPInstance {
   // GET
   // ***************************************************************************
   get(url, options, grants) {
+
+console.log(this._id, url, options)
     /* @_GET_ */
     return new Promise((resolve, reject) => {
       if (!grants) {
@@ -55,7 +57,7 @@ class HTTPInstance {
       if (options) {
         this._normalizeHeaders(options)
       }
-
+console.log(url, options)
       got.get(url, options).then(result => {
         resolve(result.body)
       }).catch(err => reject(err))
@@ -114,7 +116,7 @@ class HTTPInstance {
   }
 }
 
-class Http extends Gateway {
+class Http extends Service {
   constructor(options) {
     super(options)
 
@@ -153,8 +155,8 @@ class Http extends Gateway {
   }
 
   workflowNodePreset(node) {
-    return new Promise(async (resolve, reject) => {
-      if (this._instances[node.instance]) {
+    return new Promise((resolve, reject) => {
+      utils.waitForPropertyInit(this._instances, node.instance).then(async () => {
         try {
           for (let output of node.outputs) {
             await this.presetMethodArgs(output.method, [ node.options.url, {
@@ -162,14 +164,12 @@ class Http extends Gateway {
               responseType: node.options.responseType
             }])
           }
-
+console.log('node preset', node.id, node.label)
           resolve()
         } catch (err) {
           reject(err)
         }
-      } else {
-        reject(new Error('missing instance'))
-      }
+      }).catch(err => reject(err))
     })
   }
 
