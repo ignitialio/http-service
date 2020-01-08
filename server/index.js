@@ -9,25 +9,6 @@ class HTTPInstance {
     this._id = id
   }
 
-  _preset(period) {
-    return new Promise((resolve, reject) => {
-      if (this.interval) {
-        clearInterval(this.interval)
-        this.interval = null
-      }
-
-      this.interval = setInterval(this.process, period)
-      resolve()
-    })
-  }
-
-  _clearPreset() {
-    return new Promise((resolve, reject) => {
-      clearInterval(this.interval)
-      resolve()
-    })
-  }
-
   /* normalize from array to object */
   _normalizeHeaders(options) {
     if (options.headers && Array.isArray(options.headers)) {
@@ -44,8 +25,6 @@ class HTTPInstance {
   // GET
   // ***************************************************************************
   get(url, options, grants) {
-
-console.log(this._id, url, options)
     /* @_GET_ */
     return new Promise((resolve, reject) => {
       if (!grants) {
@@ -57,7 +36,7 @@ console.log(this._id, url, options)
       if (options) {
         this._normalizeHeaders(options)
       }
-console.log(url, options)
+      
       got.get(url, options).then(result => {
         resolve(result.body)
       }).catch(err => reject(err))
