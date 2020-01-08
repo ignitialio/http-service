@@ -36,7 +36,7 @@ class HTTPInstance {
       if (options) {
         this._normalizeHeaders(options)
       }
-      
+
       got.get(url, options).then(result => {
         resolve(result.body)
       }).catch(err => reject(err))
@@ -143,7 +143,7 @@ class Http extends Service {
               responseType: node.options.responseType
             }])
           }
-console.log('node preset', node.id, node.label)
+          
           resolve()
         } catch (err) {
           reject(err)
