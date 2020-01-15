@@ -160,6 +160,7 @@ module.exports = {
       properties: {
         url: {
           title: 'URL',
+          default: 'http://',
           type: 'string',
           _meta: {
             type: null
@@ -171,6 +172,7 @@ module.exports = {
           enum: [
             'GET', 'POST'
           ],
+          default: 'GET',
           _meta: {
             type: 'enum',
             i18n: {

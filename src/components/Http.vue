@@ -1,7 +1,7 @@
 <template>
   <div :id="id" class="http-layout">
-    <ig-form v-if="!!config && !!schema" class="http-form"
-      :value="config" @input="handleConfig"
+    <ig-form v-if="!!settings && !!schema" class="http-form"
+      :value="settings" @input="handleConfig"
       :schema="schema"></ig-form>
   </div>
 </template>
@@ -20,7 +20,7 @@ export default {
   data: () => {
     return {
       id: 'http_' + Math.random().toString(36).slice(2),
-      config: {
+      settings: {
         url: '',
         method: 'GET',
         responseType: 'json',
@@ -32,7 +32,8 @@ export default {
   watch: {
     options: {
       handler: function(val) {
-        this.config = JSON.parse(JSON.stringify(this.options))
+        this.settings = JSON.parse(JSON.stringify(this.options))
+        console.log('update options on watch', $j(this.settings))
       },
       deep: true
     }
@@ -51,11 +52,11 @@ export default {
   },
   mounted() {
     if (this.options) {
-      this.config = JSON.parse(JSON.stringify(this.options))
-      // use older configs
-      this.config.responseType = this.config.responseType || 'json'
+      this.settings = JSON.parse(JSON.stringify(this.options))
+      // use older settingss
+      this.settings.responseType = this.settings.responseType || 'json'
     } else {
-      this.$emit('update:options', this.config)
+      this.$emit('update:options', this.settings)
     }
 
     // dev

@@ -51,6 +51,7 @@
   "dependencies": {
     "@ignitial/iio-services": "^2.3.1",
     "got": "^10.0.4",
+    "json-schema-faker": "^0.5.0-rc23",
     "yaml": "^1.7.2"
   },
   "devDependencies": {

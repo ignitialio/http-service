@@ -1,4 +1,5 @@
 const got = require('got')
+const jsf = require('json-schema-faker')
 
 const Service = require('@ignitial/iio-services').Service
 const utils = require('@ignitial/iio-services').utils
@@ -102,6 +103,7 @@ class Http extends Service {
     this._instances = {}
   }
 
+  /* workflow nodes mandatory API (if multi-instance) */
   addInstance(id) {
     /* @_POST_ */
     return new Promise((resolve, reject) => {
@@ -124,6 +126,7 @@ class Http extends Service {
     })
   }
 
+  /* workflow nodes mandatory API (if multi-instance) */
   removeInstance(id) {
     /* @_DELETE_ */
     return new Promise((resolve, reject) => {
@@ -133,6 +136,23 @@ class Http extends Service {
     })
   }
 
+  /* workflow nodes mandatory API (if multi-instance) */
+  getInstances() {
+    /* @_GET_ */
+    return new Promise((resolve, reject) => {
+      resolve(Object.keys(this._instances))
+    })
+  }
+
+  /* workflow nodes mandatory API (if multi-instance) */
+  getMethods(instanceId) {
+    /* @_GET_ */
+    return new Promise((resolve, reject) => {
+      resolve(utils.getMethods(this).filter(e => e.match(instanceId)))
+    })
+  }
+
+  /* workflow nodes mandatory API: node preset */
   workflowNodePreset(node) {
     return new Promise((resolve, reject) => {
       utils.waitForPropertyInit(this._instances, node.instance).then(async () => {
@@ -143,7 +163,7 @@ class Http extends Service {
               responseType: node.options.responseType
             }])
           }
-          
+
           resolve()
         } catch (err) {
           reject(err)
@@ -152,6 +172,7 @@ class Http extends Service {
     })
   }
 
+  /* workflow nodes mandatory API: clear node preset if any */
   workflowNodeClearPreset(node) {
     return new Promise((resolve, reject) => {
       if (this._instances[node.instance]) {
@@ -162,17 +183,65 @@ class Http extends Service {
     })
   }
 
-  getInstances() {
-    /* @_GET_ */
+  /* workflow nodes mandatory API: get default settings */
+  getDefaultSettings() {
     return new Promise((resolve, reject) => {
-      resolve(Object.keys(this._instances))
-    })
-  }
+      let schema = this._options.publicOptions.schema
 
-  getMethods(instanceId) {
-    /* @_GET_ */
-    return new Promise((resolve, reject) => {
-      resolve(utils.getMethods(this).filter(e => e.match(instanceId)))
+      jsf.option({
+        failOnInvalidTypes: false,
+        useDefaultValue: true,
+        useExamplesValue: true,
+        requiredOnly: false,
+        fillProperties: true
+      })
+
+      function addRequiredFlag(schema) {
+        schema._meta = schema._meta || { type: null }
+
+        if (schema.properties) {
+          schema.required = Object.keys(schema.properties)
+
+          for (let prop in schema.properties) {
+            schema.properties[prop] = addRequiredFlag(schema.properties[prop])
+          }
+        } else {
+          if (schema.type === 'array') {
+            if (schema.items.properties) {
+              schema.items.required = Object.keys(schema.items.properties)
+              schema.items._meta = schema.items._meta || { type: null }
+
+              if (schema.items.type === 'object') {
+                for (let prop in schema.items.properties) {
+                  schema.items.properties[prop] = addRequiredFlag(schema.items.properties[prop])
+                }
+              }
+            } else if (Array.isArray(schema.items)) {
+              for (let item of schema.items) {
+                if (item.type === 'object') {
+                  for (let prop in item.properties) {
+                    item.required = Object.keys(item.properties)
+                    item._meta = item._meta || { type: null }
+
+                    item.properties[prop] = addRequiredFlag(item.properties[prop])
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        return schema
+      }
+
+      try {
+        schema = addRequiredFlag(schema)
+        let obj = jsf.generate(schema)
+
+        resolve(obj)
+      } catch (err) {
+        reject(err)
+      }
     })
   }
 }
